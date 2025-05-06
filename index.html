@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testlab Oppsett - Windows Server 2022 & Windows 11</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; }
+    header { background: #004080; color: white; padding: 1rem 2rem; }
+    header h1 { margin: 0; font-size: 1.8rem; }
+    nav { background: #e6e6e6; padding: 0.5rem 2rem; }
+    nav a { margin-right: 1rem; color: #004080; text-decoration: none; font-weight: bold; }
+    section { padding: 2rem; max-width: 900px; margin: auto; }
+    section h2 { border-bottom: 2px solid #004080; padding-bottom: 0.5rem; }
+    ul { list-style: disc inside; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+    th { background: #f4f4f4; }
+    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+    footer { background: #e6e6e6; text-align: center; padding: 1rem; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Testlab Oppsett - Windows Server 2022 & Windows 11</h1>
+  </header>
+  <nav>
+    <a href="#oversikt">Oversikt</a>
+    <a href="#utstyr">Utstyr</a>
+    <a href="#nettverk">Nettverksdesign</a>
+    <a href="#pfsense">pfSense</a>
+    <a href="#switch">UniFi Switch</a>
+    <a href="#server">MiniPC (Server)</a>
+    <a href="#ad">AD DS, DNS, DHCP</a>
+    <a href="#ou">OU & Brukere</a>
+    <a href="#klient">Lenovo Laptop (Klient)</a>
+    <a href="#verifisering">Verifisering</a>
+    <a href="#feilsok">Feilsøking</a>
+  </nav>
+
+  <section id="oversikt">
+    <h2>1. Oversikt</h2>
+    <p>I denne laben setter hver elev opp sitt eget isolerte nettverk. Hver elev bruker en MiniPC som Windows Server 2022 DC, DNS og DHCP, og en Lenovo laptop som Windows 11-klient.</p>
+    <h3>Nettverksdesign og IP-plan (per elev)</h3>
+    <p>Bytt ut <code>X</code> med din elev-ID eller et unikt tall per nettverk (f.eks. 1, 2, 3...):</p>
+    <table>
+      <tr><th>Enhet</th><th>IP/Range</th><th>Merknad</th></tr>
+      <tr><td>pfSense LAN</td><td>192.168.<code>X</code>.1/24</td><td>Gateway</td></tr>
+      <tr><td>MiniPC (Server)</td><td>192.168.<code>X</code>.10</td><td>Statisk</td></tr>
+      <tr><td>DHCP-scope</td><td>192.168.<code>X</code>.100–200</td><td>Windows 11-klient</td></tr>
+      <tr><td>Lenovo Laptop (Klient)</td><td>DHCP (192.168.<code>X</code>.*)</td><td>Domenemedlem</td></tr>
+    </table>
+  </section>
+
+  <section id="utstyr">
+    <h2>2. Utstyr</h2>
+    <ul>
+      <li>Netgate 1100 (pfSense+ gateway)</li>
+      <li>UniFi 8-port PoE switch</li>
+      <li>MiniPC med Windows Server 2022</li>
+      <li>Lenovo laptop med Windows 11</li>
+      <li>Skjerm, tastatur, mus</li>
+      <li>USB-minnepinne med Windows ISO-filer</li>
+      <li>Internett-tilgang på pfSense WAN</li>
+    </ul>
+  </section>
+
+  <section id="nettverk">
+    <h2>3. Nettverksdesign og IP-plan</h2>
+    <p>Se tabellen under "Nettverksdesign og IP-plan (per elev)" i Oversikt for detaljer.</p>
+  </section>
+
+  <section id="pfsense">
+    <h2>4. Konfigurere pfSense</h2>
+    <ol>
+      <li>Koble WAN til ISP, LAN til UniFi-switch.</li>
+      <li>Gå til <code>https://192.168.<code>X</code>.1</code> (eller 192.168.1.1 ved standard) i nettleseren.</li>
+      <li>Kjør oppsett-wizard:
+        <ul>
+          <li>WAN: DHCP eller statisk fra ISP</li>
+          <li>LAN: 192.168.<code>X</code>.1/24</li>
+          <li>Endre admin-passord og oppdater pfSense.</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <section id="switch">
+    <h2>5. Sette opp UniFi Switch</h2>
+    <ol>
+      <li>Koble switch til pfSense LAN-port.</li>
+      <li>Adopt switch i UniFi Network Controller.</li>
+      <li>Navngi switch (f.eks. <em>Switch-X</em> for elev-ID <code>X</code>).</li>
+    </ol>
+  </section>
+
+  <section id="server">
+    <h2>6. Installere Windows Server 2022 på MiniPC</h2>
+    <ol>
+      <li>Boot MiniPC fra USB-minnepinnen med Windows Server 2022 ISO.</li>
+      <li>Velg "Desktop Experience"-utgave og installer.</li>
+      <li>Etter installasjon, angi statisk IP:
+        <ul>
+          <li>IP: 192.168.<code>X</code>.10</li>
+          <li>Subnet: 255.255.255.0</li>
+          <li>Gateway: 192.168.<code>X</code>.1</li>
+          <li>DNS: 192.168.<code>X</code>.10</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <section id="ad">
+    <h2>7. Konfigurere AD DS, DNS og DHCP</h2>
+    <ol>
+      <li>I Server Manager: <strong>Add Roles and Features</strong>, legg til AD DS, DNS og DHCP.</li>
+      <li>Promote til Domain Controller: nytt domene <code>corp.local</code>.</li>
+      <li>Opprett DHCP-scope:
+        <ul>
+          <li>Range: 192.168.<code>X</code>.100–200</li>
+          <li>Gateway: 192.168.<code>X</code>.1</li>
+          <li>DNS-server: 192.168.<code>X</code>.10</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <section id="ou">
+    <h2>8. Opprette OU-er og brukerkontoer</h2>
+    <ol>
+      <li>Åpne Active Directory Users and Computers.</li>
+      <li>Opprett OU-er: <em>Employees</em> og <em>IT</em>.</li>
+      <li>Opprett bruker: Ola Nordmann (<code>onordmann</code>) med passende passord.</li>
+    </ol>
+  </section>
+
+  <section id="klient">
+    <h2>9. Installere Windows 11 på Lenovo Laptop</h2>
+    <ol>
+      <li>Boot Lenovo fra Windows 11-USB og installer OS.</li>
+      <li>Koble til nettverk, DHCP tildeler IP 192.168.<code>X</code>.100–200.</li>
+      <li>Bli med i domenet <code>corp.local</code> ved å legge til domenemedlem.</li>
+    </ol>
+  </section>
+
+  <section id="verifisering">
+    <h2>10. Verifisere Domenepålogging</h2>
+    <ul>
+      <li>Logg på som <code>corp\\onordmann</code> på Lenovo.</li>
+      <li>Bekreft IP med <code>ipconfig /all</code> og ping MiniPC (<code>ping 192.168.<code>X</code>.10</code>).</li>
+    </ul>
+  </section>
+
+  <section id="feilsok">
+    <h2>11. Feilsøking</h2>
+    <ul>
+      <li>DHCP-scope aktivert?</li>
+      <li>DNS-innstillinger korrekt?</li>
+      <li>Domain join-status med <code>nltest /dclist:corp.local</code>.</li>
+      <li>pfSense LAN-regler tillater nødvendig trafikk.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>2ITA &bull; © 2025</p>
+  </footer>
+</body>
+</html>
